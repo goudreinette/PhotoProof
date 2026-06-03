@@ -125,6 +125,7 @@ class PhotoProof_Settings {
 
             // The translatable string uses %1$s, %2$s, %3$s placeholders that translators
             // can move around freely (different word orders across languages).
+            /* translators: %1$s: plus icon SVG, %2$s: minus icon SVG, %3$s: infinity icon SVG */
             $intro_template = __(
                 'Click %1$s on a card to enable a feature, %2$s to disable it. Cards marked with %3$s are always active and cannot be turned off.',
                 'photoproof'
@@ -132,8 +133,22 @@ class PhotoProof_Settings {
             ?>
             <p class="pp-settings-intro">
                 <?php
-                // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- SVGs are static
-                echo sprintf( $intro_template, $icon_plus, $icon_minus, $icon_infinity );
+                // Whitelist explicite des tags SVG inline contenus dans les 3 icônes ci-dessus
+                // — escaping late au point d'echo (pas de phpcs:ignore).
+                $allowed_svg_tags = array(
+                    'svg'  => array(
+                        'class'       => array(),
+                        'viewbox'     => array(),
+                        'aria-hidden' => array(),
+                    ),
+                    'path' => array(
+                        'd' => array(),
+                    ),
+                );
+                echo wp_kses(
+                    sprintf( $intro_template, $icon_plus, $icon_minus, $icon_infinity ),
+                    $allowed_svg_tags
+                );
                 ?>
             </p>
 
@@ -189,7 +204,7 @@ class PhotoProof_Settings {
                         <div class="pp-card-wrap">
                             <h3 class="pp-card-heading"><?php esc_html_e( 'Random URLs (UUID)', 'photoproof' ); ?></h3>
                             <span class="pp-card-bar" aria-hidden="true"></span>
-                            <div class="pp-card<?php echo get_option( 'photoproof_use_random_urls' ) ? ' is-active' : ''; ?>" data-toggle-target="photoproof_use_random_urls">
+                            <div class="pp-card<?php echo esc_attr( get_option( 'photoproof_use_random_urls' ) ? ' is-active' : '' ); ?>" data-toggle-target="photoproof_use_random_urls">
                             <svg class="pp-card-stroke" preserveAspectRatio="none"><rect x="1" y="1" width="calc(100% - 2px)" height="calc(100% - 2px)"></rect></svg>
 
                             <button type="button" class="pp-card-toggle" aria-label="Toggle">
@@ -198,7 +213,7 @@ class PhotoProof_Settings {
                                 <svg class="icon-infinity" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8c-2.5 0-4.5 1.79-4.5 4s2 4 4.5 4c3.5 0 5.5-8 11-8 2.5 0 4.5 1.79 4.5 4s-2 4-4.5 4c-5.5 0-7.5-8-11-8z"/></svg>
                             </button>
 
-                            <input type="hidden" name="photoproof_use_random_urls" value="<?php echo get_option( 'photoproof_use_random_urls' ) ? '1' : '0'; ?>">
+                            <input type="hidden" name="photoproof_use_random_urls" value="<?php echo esc_attr( get_option( 'photoproof_use_random_urls' ) ? '1' : '0' ); ?>">
 
                             <div class="pp-card-header">
                                 <span class="pp-card-icon">
@@ -220,7 +235,7 @@ class PhotoProof_Settings {
                             </div>
 
                             <div class="pp-card-footer">
-                                <span class="pp-card-status"><?php echo get_option( 'photoproof_use_random_urls' ) ? esc_html__( 'Active', 'photoproof' ) : esc_html__( 'Inactive', 'photoproof' ); ?></span>
+                                <span class="pp-card-status"><?php echo esc_html( get_option( 'photoproof_use_random_urls' ) ? __( 'Active', 'photoproof' ) : __( 'Inactive', 'photoproof' ) ); ?></span>
                             </div>
                         </div>
                         </div>
@@ -229,7 +244,7 @@ class PhotoProof_Settings {
                         <div class="pp-card-wrap">
                             <h3 class="pp-card-heading"><?php esc_html_e( 'File renaming', 'photoproof' ); ?></h3>
                             <span class="pp-card-bar" aria-hidden="true"></span>
-                            <div class="pp-card<?php echo get_option( 'photoproof_enable_rename' ) ? ' is-active' : ''; ?>" data-toggle-target="photoproof_enable_rename">
+                            <div class="pp-card<?php echo esc_attr( get_option( 'photoproof_enable_rename' ) ? ' is-active' : '' ); ?>" data-toggle-target="photoproof_enable_rename">
                             <svg class="pp-card-stroke" preserveAspectRatio="none"><rect x="1" y="1" width="calc(100% - 2px)" height="calc(100% - 2px)"></rect></svg>
 
                             <button type="button" class="pp-card-toggle" aria-label="Toggle">
@@ -238,7 +253,7 @@ class PhotoProof_Settings {
                                 <svg class="icon-infinity" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8c-2.5 0-4.5 1.79-4.5 4s2 4 4.5 4c3.5 0 5.5-8 11-8 2.5 0 4.5 1.79 4.5 4s-2 4-4.5 4c-5.5 0-7.5-8-11-8z"/></svg>
                             </button>
 
-                            <input type="hidden" name="photoproof_enable_rename" id="photoproof_enable_rename" value="<?php echo get_option( 'photoproof_enable_rename' ) ? '1' : '0'; ?>">
+                            <input type="hidden" name="photoproof_enable_rename" id="photoproof_enable_rename" value="<?php echo esc_attr( get_option( 'photoproof_enable_rename' ) ? '1' : '0' ); ?>">
 
                             <div class="pp-card-header">
                                 <span class="pp-card-icon">
@@ -262,8 +277,11 @@ class PhotoProof_Settings {
                                 <p class="pp-card-help">
                                     <?php
                                     printf(
-                                        // translators: %s: variable name in code tags
-                                        esc_html__( 'Use %s as a placeholder for the gallery name. Custom name in metabox overrides it.', 'photoproof' ),
+                                        wp_kses(
+                                            /* translators: %s: variable name in code tags */
+                                            __( 'Use %s as a placeholder for the gallery name. Custom name in metabox overrides it.', 'photoproof' ),
+                                            array( 'code' => array() )
+                                        ),
                                         '<code>{gallery_title}</code>'
                                     );
                                     ?>
@@ -271,7 +289,7 @@ class PhotoProof_Settings {
                             </div>
 
                             <div class="pp-card-footer">
-                                <span class="pp-card-status"><?php echo get_option( 'photoproof_enable_rename' ) ? esc_html__( 'Active', 'photoproof' ) : esc_html__( 'Inactive', 'photoproof' ); ?></span>
+                                <span class="pp-card-status"><?php echo esc_html( get_option( 'photoproof_enable_rename' ) ? __( 'Active', 'photoproof' ) : __( 'Inactive', 'photoproof' ) ); ?></span>
                             </div>
                         </div>
                         </div>
@@ -280,7 +298,7 @@ class PhotoProof_Settings {
                         <div class="pp-card-wrap">
                             <h3 class="pp-card-heading"><?php esc_html_e( 'Recommendations', 'photoproof' ); ?></h3>
                             <span class="pp-card-bar" aria-hidden="true"></span>
-                            <div class="pp-card<?php echo get_option( 'photoproof_enable_recommendations' ) ? ' is-active' : ''; ?>" data-toggle-target="photoproof_enable_recommendations">
+                            <div class="pp-card<?php echo esc_attr( get_option( 'photoproof_enable_recommendations' ) ? ' is-active' : '' ); ?>" data-toggle-target="photoproof_enable_recommendations">
                             <svg class="pp-card-stroke" preserveAspectRatio="none"><rect x="1" y="1" width="calc(100% - 2px)" height="calc(100% - 2px)"></rect></svg>
 
                             <button type="button" class="pp-card-toggle" aria-label="Toggle">
@@ -289,7 +307,7 @@ class PhotoProof_Settings {
                                 <svg class="icon-infinity" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8c-2.5 0-4.5 1.79-4.5 4s2 4 4.5 4c3.5 0 5.5-8 11-8 2.5 0 4.5 1.79 4.5 4s-2 4-4.5 4c-5.5 0-7.5-8-11-8z"/></svg>
                             </button>
 
-                            <input type="hidden" name="photoproof_enable_recommendations" id="photoproof_enable_recommendations" value="<?php echo get_option( 'photoproof_enable_recommendations' ) ? '1' : '0'; ?>">
+                            <input type="hidden" name="photoproof_enable_recommendations" id="photoproof_enable_recommendations" value="<?php echo esc_attr( get_option( 'photoproof_enable_recommendations' ) ? '1' : '0' ); ?>">
 
                             <div class="pp-card-header">
                                 <span class="pp-card-icon">
@@ -315,7 +333,7 @@ class PhotoProof_Settings {
                             </div>
 
                             <div class="pp-card-footer">
-                                <span class="pp-card-status"><?php echo get_option( 'photoproof_enable_recommendations' ) ? esc_html__( 'Active', 'photoproof' ) : esc_html__( 'Inactive', 'photoproof' ); ?></span>
+                                <span class="pp-card-status"><?php echo esc_html( get_option( 'photoproof_enable_recommendations' ) ? __( 'Active', 'photoproof' ) : __( 'Inactive', 'photoproof' ) ); ?></span>
                             </div>
                         </div>
                         </div>
@@ -324,7 +342,7 @@ class PhotoProof_Settings {
                         <div class="pp-card-wrap">
                             <h3 class="pp-card-heading"><?php esc_html_e( 'Auto-archiving', 'photoproof' ); ?></h3>
                             <span class="pp-card-bar" aria-hidden="true"></span>
-                            <div class="pp-card<?php echo get_option( 'photoproof_enable_expiration' ) ? ' is-active' : ''; ?>" data-toggle-target="photoproof_enable_expiration">
+                            <div class="pp-card<?php echo esc_attr( get_option( 'photoproof_enable_expiration' ) ? ' is-active' : '' ); ?>" data-toggle-target="photoproof_enable_expiration">
                             <svg class="pp-card-stroke" preserveAspectRatio="none"><rect x="1" y="1" width="calc(100% - 2px)" height="calc(100% - 2px)"></rect></svg>
 
                             <button type="button" class="pp-card-toggle" aria-label="Toggle">
@@ -333,7 +351,7 @@ class PhotoProof_Settings {
                                 <svg class="icon-infinity" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8c-2.5 0-4.5 1.79-4.5 4s2 4 4.5 4c3.5 0 5.5-8 11-8 2.5 0 4.5 1.79 4.5 4s-2 4-4.5 4c-5.5 0-7.5-8-11-8z"/></svg>
                             </button>
 
-                            <input type="hidden" name="photoproof_enable_expiration" id="photoproof_enable_expiration" value="<?php echo get_option( 'photoproof_enable_expiration' ) ? '1' : '0'; ?>">
+                            <input type="hidden" name="photoproof_enable_expiration" id="photoproof_enable_expiration" value="<?php echo esc_attr( get_option( 'photoproof_enable_expiration' ) ? '1' : '0' ); ?>">
 
                             <div class="pp-card-header">
                                 <span class="pp-card-icon">
@@ -353,7 +371,7 @@ class PhotoProof_Settings {
                             </div>
 
                             <div class="pp-card-footer">
-                                <span class="pp-card-status"><?php echo get_option( 'photoproof_enable_expiration' ) ? esc_html__( 'Active', 'photoproof' ) : esc_html__( 'Inactive', 'photoproof' ); ?></span>
+                                <span class="pp-card-status"><?php echo esc_html( get_option( 'photoproof_enable_expiration' ) ? __( 'Active', 'photoproof' ) : __( 'Inactive', 'photoproof' ) ); ?></span>
                             </div>
                         </div>
                         </div>
@@ -362,7 +380,7 @@ class PhotoProof_Settings {
                         <div class="pp-card-wrap is-half">
                             <h3 class="pp-card-heading"><?php esc_html_e( 'Client comments', 'photoproof' ); ?></h3>
                             <span class="pp-card-bar" aria-hidden="true"></span>
-                            <div class="pp-card<?php echo get_option( 'photoproof_enable_comments' ) ? ' is-active' : ''; ?>" data-toggle-target="photoproof_enable_comments">
+                            <div class="pp-card<?php echo esc_attr( get_option( 'photoproof_enable_comments' ) ? ' is-active' : '' ); ?>" data-toggle-target="photoproof_enable_comments">
                             <svg class="pp-card-stroke" preserveAspectRatio="none"><rect x="1" y="1" width="calc(100% - 2px)" height="calc(100% - 2px)"></rect></svg>
 
                             <button type="button" class="pp-card-toggle" aria-label="Toggle">
@@ -371,7 +389,7 @@ class PhotoProof_Settings {
                                 <svg class="icon-infinity" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8c-2.5 0-4.5 1.79-4.5 4s2 4 4.5 4c3.5 0 5.5-8 11-8 2.5 0 4.5 1.79 4.5 4s-2 4-4.5 4c-5.5 0-7.5-8-11-8z"/></svg>
                             </button>
 
-                            <input type="hidden" name="photoproof_enable_comments" id="photoproof_enable_comments" value="<?php echo get_option( 'photoproof_enable_comments' ) ? '1' : '0'; ?>">
+                            <input type="hidden" name="photoproof_enable_comments" id="photoproof_enable_comments" value="<?php echo esc_attr( get_option( 'photoproof_enable_comments' ) ? '1' : '0' ); ?>">
 
                             <div class="pp-card-header">
                                 <span class="pp-card-icon">
@@ -391,7 +409,7 @@ class PhotoProof_Settings {
                             </div>
 
                             <div class="pp-card-footer">
-                                <span class="pp-card-status"><?php echo get_option( 'photoproof_enable_comments' ) ? esc_html__( 'Active', 'photoproof' ) : esc_html__( 'Inactive', 'photoproof' ); ?></span>
+                                <span class="pp-card-status"><?php echo esc_html( get_option( 'photoproof_enable_comments' ) ? __( 'Active', 'photoproof' ) : __( 'Inactive', 'photoproof' ) ); ?></span>
                             </div>
                         </div>
                         </div>
@@ -409,7 +427,7 @@ class PhotoProof_Settings {
                         <div class="pp-card-wrap is-half">
                             <h3 class="pp-card-heading"><?php esc_html_e( 'Watermark', 'photoproof' ); ?></h3>
                             <span class="pp-card-bar" aria-hidden="true"></span>
-                            <div class="pp-card<?php echo $is_watermark_active ? ' is-active' : ''; ?>" data-toggle-mode="fake">
+                            <div class="pp-card<?php echo esc_attr( $is_watermark_active ? ' is-active' : '' ); ?>" data-toggle-mode="fake">
                             <svg class="pp-card-stroke" preserveAspectRatio="none"><rect x="1" y="1" width="calc(100% - 2px)" height="calc(100% - 2px)"></rect></svg>
 
                             <button type="button" class="pp-card-toggle" aria-label="Toggle">
@@ -451,7 +469,7 @@ class PhotoProof_Settings {
                                         <?php esc_html_e( 'Select logo', 'photoproof' ); ?>
                                     </button>
                                     <button type="button" class="button button-link-delete" id="photoproof_remove_watermark_btn"
-                                        style="display: <?php echo $is_watermark_active ? 'inline-block' : 'none'; ?>;">
+                                        style="display: <?php echo esc_attr( $is_watermark_active ? 'inline-block' : 'none' ); ?>;">
                                         <?php esc_html_e( 'Delete', 'photoproof' ); ?>
                                     </button>
                                 </div>
@@ -465,12 +483,12 @@ class PhotoProof_Settings {
                                         class="pp-slider"
                                         min="10" max="100" step="5"
                                         value="<?php echo esc_attr( get_option( 'photoproof_watermark_opacity', 50 ) ); ?>"
-                                        <?php echo $is_watermark_active ? '' : 'disabled'; ?>>
+                                        <?php echo esc_attr( $is_watermark_active ? '' : 'disabled' ); ?>>
                                 </div>
                             </div>
 
                             <div class="pp-card-footer">
-                                <span class="pp-card-status"><?php echo $is_watermark_active ? esc_html__( 'Active', 'photoproof' ) : esc_html__( 'Inactive', 'photoproof' ); ?></span>
+                                <span class="pp-card-status"><?php echo esc_html( $is_watermark_active ? __( 'Active', 'photoproof' ) : __( 'Inactive', 'photoproof' ) ); ?></span>
                             </div>
                         </div>
                         </div>
@@ -510,8 +528,11 @@ class PhotoProof_Settings {
                                 <p class="pp-card-help">
                                     <?php
                                     printf(
-                                        // translators: %s: URL example
-                                        esc_html__( 'Example: %s', 'photoproof' ),
+                                        wp_kses(
+                                            /* translators: %s: URL example */
+                                            __( 'Example: %s', 'photoproof' ),
+                                            array( 'code' => array() )
+                                        ),
                                         '<code>https://example.com/my-login</code>'
                                     );
                                     ?>
@@ -531,7 +552,7 @@ class PhotoProof_Settings {
                         <div class="pp-card-wrap">
                             <h3 class="pp-card-heading"><?php esc_html_e( 'Delete files on gallery removal', 'photoproof' ); ?></h3>
                             <span class="pp-card-bar" aria-hidden="true"></span>
-                            <div class="pp-card<?php echo get_option( 'photoproof_delete_files_on_delete' ) ? ' is-active' : ''; ?>" data-toggle-target="photoproof_delete_files_on_delete">
+                            <div class="pp-card<?php echo esc_attr( get_option( 'photoproof_delete_files_on_delete' ) ? ' is-active' : '' ); ?>" data-toggle-target="photoproof_delete_files_on_delete">
                             <svg class="pp-card-stroke" preserveAspectRatio="none"><rect x="1" y="1" width="calc(100% - 2px)" height="calc(100% - 2px)"></rect></svg>
 
                             <button type="button" class="pp-card-toggle" aria-label="Toggle">
@@ -540,7 +561,7 @@ class PhotoProof_Settings {
                                 <svg class="icon-infinity" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8c-2.5 0-4.5 1.79-4.5 4s2 4 4.5 4c3.5 0 5.5-8 11-8 2.5 0 4.5 1.79 4.5 4s-2 4-4.5 4c-5.5 0-7.5-8-11-8z"/></svg>
                             </button>
 
-                            <input type="hidden" name="photoproof_delete_files_on_delete" value="<?php echo get_option( 'photoproof_delete_files_on_delete' ) ? '1' : '0'; ?>">
+                            <input type="hidden" name="photoproof_delete_files_on_delete" value="<?php echo esc_attr( get_option( 'photoproof_delete_files_on_delete' ) ? '1' : '0' ); ?>">
 
                             <div class="pp-card-header">
                                 <span class="pp-card-icon">
@@ -557,8 +578,11 @@ class PhotoProof_Settings {
                                 <p class="pp-card-help">
                                     <?php
                                     printf(
-                                        // translators: %s: folder path in code tags
-                                        esc_html__( 'If disabled, %s folders are kept on the server.', 'photoproof' ),
+                                        wp_kses(
+                                            /* translators: %s: folder path in code tags */
+                                            __( 'If disabled, %s folders are kept on the server.', 'photoproof' ),
+                                            array( 'code' => array() )
+                                        ),
                                         '<code>photoproof/gallery-{id}/</code>'
                                     );
                                     ?>
@@ -566,7 +590,7 @@ class PhotoProof_Settings {
                             </div>
 
                             <div class="pp-card-footer">
-                                <span class="pp-card-status"><?php echo get_option( 'photoproof_delete_files_on_delete' ) ? esc_html__( 'Active', 'photoproof' ) : esc_html__( 'Inactive', 'photoproof' ); ?></span>
+                                <span class="pp-card-status"><?php echo esc_html( get_option( 'photoproof_delete_files_on_delete' ) ? __( 'Active', 'photoproof' ) : __( 'Inactive', 'photoproof' ) ); ?></span>
                             </div>
                         </div>
                         </div>
@@ -637,7 +661,7 @@ class PhotoProof_Settings {
                                             <?php esc_html_e( 'Upload a logo', 'photoproof' ); ?>
                                         </button>
                                         <button type="button" class="button button-link-delete" id="photoproof_remove_custom_logo_btn"
-                                            style="display: <?php echo get_option( 'photoproof_custom_logo' ) ? 'inline-block' : 'none'; ?>;">
+                                            style="display: <?php echo esc_attr( get_option( 'photoproof_custom_logo' ) ? 'inline-block' : 'none' ); ?>;">
                                             <?php esc_html_e( 'Remove', 'photoproof' ); ?>
                                         </button>
                                     </div>
@@ -720,7 +744,7 @@ class PhotoProof_Settings {
                         <div class="pp-card-wrap">
                             <h3 class="pp-card-heading"><?php esc_html_e( 'Masonry layout', 'photoproof' ); ?></h3>
                             <span class="pp-card-bar" aria-hidden="true"></span>
-                            <div class="pp-card<?php echo 'masonry' === get_option( 'photoproof_gallery_layout', 'grid' ) ? ' is-active' : ''; ?>" data-toggle-mode="layout">
+                            <div class="pp-card<?php echo esc_attr( 'masonry' === get_option( 'photoproof_gallery_layout', 'grid' ) ? ' is-active' : '' ); ?>" data-toggle-mode="layout">
                             <svg class="pp-card-stroke" preserveAspectRatio="none"><rect x="1" y="1" width="calc(100% - 2px)" height="calc(100% - 2px)"></rect></svg>
 
                             <button type="button" class="pp-card-toggle" aria-label="Toggle">
@@ -750,7 +774,7 @@ class PhotoProof_Settings {
                             </div>
 
                             <div class="pp-card-footer">
-                                <span class="pp-card-status"><?php echo 'masonry' === get_option( 'photoproof_gallery_layout', 'grid' ) ? esc_html__( 'Active', 'photoproof' ) : esc_html__( 'Inactive', 'photoproof' ); ?></span>
+                                <span class="pp-card-status"><?php echo esc_html( 'masonry' === get_option( 'photoproof_gallery_layout', 'grid' ) ? __( 'Active', 'photoproof' ) : __( 'Inactive', 'photoproof' ) ); ?></span>
                             </div>
                         </div>
                         </div>
@@ -759,7 +783,7 @@ class PhotoProof_Settings {
                         <div class="pp-card-wrap">
                             <h3 class="pp-card-heading"><?php esc_html_e( 'Rounded corners', 'photoproof' ); ?></h3>
                             <span class="pp-card-bar" aria-hidden="true"></span>
-                            <div class="pp-card<?php echo get_option( 'photoproof_photo_rounded' ) ? ' is-active' : ''; ?>" data-toggle-target="photoproof_photo_rounded">
+                            <div class="pp-card<?php echo esc_attr( get_option( 'photoproof_photo_rounded' ) ? ' is-active' : '' ); ?>" data-toggle-target="photoproof_photo_rounded">
                             <svg class="pp-card-stroke" preserveAspectRatio="none"><rect x="1" y="1" width="calc(100% - 2px)" height="calc(100% - 2px)"></rect></svg>
 
                             <button type="button" class="pp-card-toggle" aria-label="Toggle">
@@ -768,7 +792,7 @@ class PhotoProof_Settings {
                                 <svg class="icon-infinity" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8c-2.5 0-4.5 1.79-4.5 4s2 4 4.5 4c3.5 0 5.5-8 11-8 2.5 0 4.5 1.79 4.5 4s-2 4-4.5 4c-5.5 0-7.5-8-11-8z"/></svg>
                             </button>
 
-                            <input type="hidden" name="photoproof_photo_rounded" id="photoproof_photo_rounded" value="<?php echo get_option( 'photoproof_photo_rounded' ) ? '1' : '0'; ?>">
+                            <input type="hidden" name="photoproof_photo_rounded" id="photoproof_photo_rounded" value="<?php echo esc_attr( get_option( 'photoproof_photo_rounded' ) ? '1' : '0' ); ?>">
 
                             <div class="pp-card-header">
                                 <span class="pp-card-icon">
@@ -788,7 +812,7 @@ class PhotoProof_Settings {
                             </div>
 
                             <div class="pp-card-footer">
-                                <span class="pp-card-status"><?php echo get_option( 'photoproof_photo_rounded' ) ? esc_html__( 'Active', 'photoproof' ) : esc_html__( 'Inactive', 'photoproof' ); ?></span>
+                                <span class="pp-card-status"><?php echo esc_html( get_option( 'photoproof_photo_rounded' ) ? __( 'Active', 'photoproof' ) : __( 'Inactive', 'photoproof' ) ); ?></span>
                             </div>
                         </div>
                         </div>

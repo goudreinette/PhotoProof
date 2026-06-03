@@ -187,7 +187,7 @@ if ( has_post_thumbnail( $post->ID ) ) {
                             <span class="pp-card-name"><?php echo esc_html( $filename ); ?></span>
 
 <?php if ( $comments_enabled ) : ?>
-                                <button class="pp-comment-btn <?php echo $existing_comment ? 'pp-has-comment' : ''; ?>" type="button"
+                                <button class="pp-comment-btn <?php echo esc_attr( $existing_comment ? 'pp-has-comment' : '' ); ?>" type="button"
                                     data-id="<?php echo esc_attr( $img_id ); ?>"
                                     data-comment="<?php echo esc_attr( $existing_comment ); ?>"
                                     aria-label="<?php esc_attr_e( 'Add a comment', 'photoproof' ); ?>">
@@ -220,7 +220,7 @@ if ( has_post_thumbnail( $post->ID ) ) {
                                 placeholder="<?php esc_attr_e( 'Anything to add about this photo?', 'photoproof' ); ?>"
                             ><?php echo esc_textarea( $existing_comment ); ?></textarea>
                             <div class="pp-back-footer">
-                                <span class="pp-back-counter"><?php echo strlen( $existing_comment ); ?>/500</span>
+                                <span class="pp-back-counter"><?php echo esc_html( strlen( $existing_comment ) ); ?>/500</span>
                                 <button type="button" class="pp-back-done"><?php esc_html_e( 'Done', 'photoproof' ); ?></button>
                             </div>
                         </div>
@@ -246,7 +246,7 @@ if ( has_post_thumbnail( $post->ID ) ) {
                 <span class="pp-save-status" id="pp-save-status"></span>
                 <button type="button" class="pp-btn-validate" id="pp-btn-validate"
                     data-confirmed="<?php esc_attr_e( 'Selection confirmed', 'photoproof' ); ?>"
-                    <?php echo $count_selected === 0 ? 'disabled' : ''; ?>>
+                    <?php echo esc_attr( $count_selected === 0 ? 'disabled' : '' ); ?>>
                     <?php esc_html_e( 'Validate selection', 'photoproof' ); ?>
                 </button>
             </div>

@@ -82,10 +82,12 @@ class PhotoProof_Helpers {
         // Injecter la valeur des colonnes via une CSS custom property scoping par instance.
         // On utilise wp_add_inline_style plutôt qu'un attribut style="..." inline pour respecter
         // les recommandations WordPress sur les styles dynamiques.
+        // Escaping late : sanitize_html_class() sur l'ID injecté dans le sélecteur CSS,
+        // absint() sur la valeur numérique.
         $instance_id = 'photoproof-sc-' . wp_generate_password( 8, false, false );
         wp_add_inline_style(
             'photoproof-shortcode-css',
-            '#' . $instance_id . ' { --photoproof-sc-cols: ' . absint( $cols ) . '; }'
+            '#' . sanitize_html_class( $instance_id ) . ' { --photoproof-sc-cols: ' . absint( $cols ) . '; }'
         );
 
         ob_start();

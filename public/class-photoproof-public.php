@@ -344,10 +344,12 @@ foreach ( $wp_scripts->queue as $handle ) {
             wp_send_json_error( array( 'message' => __( 'Comments are disabled.', 'photoproof' ) ), 403 );
         }
 
-        // 1. Validate parameters
+        // 1. Validate parameters (sanitize early at extraction point).
+        // Note: nonce is verified later (step 2) — sanitize-before-verify is acceptable here
+        // because absint() and sanitize_textarea_field() neutralize any malicious input.
         $gallery_id    = isset( $_POST['gallery_id'] ) ? absint( $_POST['gallery_id'] ) : 0;
         $attachment_id = isset( $_POST['attachment_id'] ) ? absint( $_POST['attachment_id'] ) : 0;
-        $comment       = isset( $_POST['comment'] ) ? wp_unslash( $_POST['comment'] ) : '';
+        $comment       = isset( $_POST['comment'] ) ? sanitize_textarea_field( wp_unslash( $_POST['comment'] ) ) : '';
 
         if ( ! $gallery_id || ! $attachment_id ) {
             wp_send_json_error( array( 'message' => __( 'Invalid parameters.', 'photoproof' ) ), 400 );
@@ -381,8 +383,7 @@ foreach ( $wp_scripts->queue as $handle ) {
             wp_send_json_error( array( 'message' => __( 'Attachment does not belong to this gallery.', 'photoproof' ) ), 403 );
         }
 
-        // 5. Sanitize comment, length cap 500 chars
-        $comment = sanitize_textarea_field( $comment );
+        // 5. Length cap 500 chars (sanitize already done at extraction, step 1)
         $comment = mb_substr( $comment, 0, 500 );
 
         // 6. Save (or delete if empty)

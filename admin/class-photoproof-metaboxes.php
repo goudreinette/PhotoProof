@@ -572,15 +572,17 @@ class PhotoProof_Metaboxes {
                             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
                         </svg>
                         <div class="pp-upload-title">
-                            <?php echo $is_new
-                                ? esc_html__( 'Upload media', 'photoproof' )
-                                : esc_html__( 'Add images', 'photoproof' );
+                            <?php echo esc_html( $is_new
+                                ? __( 'Upload media', 'photoproof' )
+                                : __( 'Add images', 'photoproof' )
+                            );
                             ?>
                         </div>
                         <div class="pp-upload-sub">
-                            <?php echo $is_new
-                                ? esc_html__( 'Publish or save the draft before uploading to see images name updated', 'photoproof' )
-                                : esc_html__( 'Click to browse or drag and drop your files here', 'photoproof' );
+                            <?php echo esc_html( $is_new
+                                ? __( 'Publish or save the draft before uploading to see images name updated', 'photoproof' )
+                                : __( 'Click to browse or drag and drop your files here', 'photoproof' )
+                            );
                             ?>
                         </div>
                     </div>
