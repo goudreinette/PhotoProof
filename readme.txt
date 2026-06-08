@@ -8,11 +8,11 @@ Requires PHP: 8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Proofing gallery plugin for photographers. Let clients browse, select and validate their favorite photos from a beautiful standalone gallery page.
+Self-hosted gallery proofing for photographers. Share galleries with your clients, let them pick their favorite photos, get the selection back as CSV or email.
 
 == Description ==
 
-PhotoProof turns WordPress into a professional proofing platform for photographers. Create secure galleries, share them with your clients, and let them pick their favorite shots — no account needed for browsing, login required only for validation.
+PhotoProof turns WordPress into a proofing platform for photographers. Create galleries, share them with your clients, and let them pick their favorite shots — no account needed for browsing, login required only for validation.
 
 **Key features:**
 
@@ -30,6 +30,8 @@ PhotoProof turns WordPress into a professional proofing platform for photographe
 * **Customizable design** — choose background, accent and text colors, upload your logo, toggle rounded corners
 
 PhotoProof stores all gallery photos in a dedicated folder (`/uploads/photoproof/`), separate from the standard Media Library.
+
+**Built for photographers, by a photographer.** PhotoProof is built and maintained by Cédric Stoecklin, a photographer who needed a proofing tool that wouldn't lock him into a SaaS or share his clients' photos with third parties. Free, open source, and built to last. More details and a full walkthrough on [photoproof.cedricstoecklin.com](https://photoproof.cedricstoecklin.com/).
 
 == Installation ==
 
@@ -85,14 +87,42 @@ WordPress asks "Are you sure you want to delete this plugin and all of its data?
 
 If you want to keep your data, **deactivate** the plugin instead of deleting it. Deactivation preserves everything.
 
+== For developers ==
+
+PhotoProof is built to be extended. It exposes action hooks, filter hooks, helper functions and a shortcode — everything you need to wire it into your own workflow or build a plugin on top.
+
+**Action hooks** include `photoproof_gallery_selection_confirmed` (fired when a client validates), `photoproof_attachment_uploaded` (fired after a photo is processed) and `photoproof_daily_expiration_check` (cron hook for daily maintenance).
+
+**Template tags** include `photoproof_get_client_galleries()`, `photoproof_get_gallery_status()`, `photoproof_get_gallery_selection()` and more — callable from any theme template.
+
+**Shortcode** `[photoproof_galleries_client]` displays a grid of galleries assigned to the currently logged-in user, with configurable columns and display options.
+
+Full developer documentation with code examples is available at [photoproof.cedricstoecklin.com#developer](https://photoproof.cedricstoecklin.com/#developer).
+
+== External services ==
+
+PhotoProof does not connect to any external service. All gallery photos, client data, watermarks, email templates and CSV exports are stored and processed entirely on your own WordPress installation. No data is sent to third-party servers, no tracking, no analytics, no API calls. Your photographs and your clients' selections never leave your hosting.
+
+== Privacy ==
+
+PhotoProof stores the following data:
+
+* **Gallery metadata** (title, status, client assignment) in WordPress' standard `wp_posts` and `wp_postmeta` tables
+* **Gallery-specific metadata** (UUID, watermark state, expiration date) in a custom table `wp_photoproof_galleries`
+* **Uploaded photos** in `/uploads/photoproof/` (separate from the main Media Library), with optional watermarked copies in `/watermarked/`
+* **Client selections** as post meta on the gallery
+* **Photographer recommendations** as post meta on each attachment
+* **Plugin settings** (colors, watermark, email templates) as standard WordPress options
+
+No data is collected, transmitted or shared with third parties. The plugin uses no cookies beyond WordPress' standard session handling for authenticated users.
+
+Uninstalling the plugin (not deactivating) permanently removes all of the above. Deactivation preserves all data.
+
 == Screenshots ==
 
 1. Client gallery view — clean, standalone page with photo grid and selection bar
 2. Gallery editor — metabox with status, upload zone, client assignment and selection recap
 3. Settings page — general options, renaming patterns, recommendation icons
-4. Watermark & security settings — logo upload, opacity slider, login page, file deletion
-5. Design settings — colors, logo, rounded corners
-6. Email settings — customizable templates with variables
 
 == Changelog ==
 
