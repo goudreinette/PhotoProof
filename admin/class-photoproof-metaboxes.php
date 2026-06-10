@@ -572,17 +572,15 @@ class PhotoProof_Metaboxes {
                             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
                         </svg>
                         <div class="pp-upload-title">
-                            <?php echo esc_html( $is_new
-                                ? __( 'Upload media', 'photoproof' )
-                                : __( 'Add images', 'photoproof' )
-                            );
+                            <?php echo $is_new
+                                ? esc_html__( 'Upload media', 'photoproof' )
+                                : esc_html__( 'Add images', 'photoproof' );
                             ?>
                         </div>
                         <div class="pp-upload-sub">
-                            <?php echo esc_html( $is_new
-                                ? __( 'Publish or save the draft before uploading to see images name updated', 'photoproof' )
-                                : __( 'Click to browse or drag and drop your files here', 'photoproof' )
-                            );
+                            <?php echo $is_new
+                                ? esc_html__( 'Publish or save the draft before uploading to see images name updated', 'photoproof' )
+                                : esc_html__( 'Click to browse or drag and drop your files here', 'photoproof' );
                             ?>
                         </div>
                     </div>
@@ -632,13 +630,30 @@ class PhotoProof_Metaboxes {
         // ── Insert ou update selon que la ligne existe déjà ──
         $existing = $existing_row ? true : false;
 
+        // Base row data (always written).
         $row_data   = array(
-            'client_id'          => $client_id,
             'status'             => $status,
             'watermark_settings' => $watermark_val,
             'folder_path'        => 'photoproof/gallery-' . $post_id,
         );
-        $row_format = array( '%d', '%s', '%s', '%s' );
+        $row_format = array( '%s', '%s', '%s' );
+
+        // Only write client_id when the field was actually submitted in $_POST.
+        // The <select name="photoproof_client_id"> is disabled when the gallery is
+        // locked (statuses "valide" or "ferme"). A disabled HTML field is NOT sent
+        // by the browser, so $_POST['photoproof_client_id'] is missing in that case.
+        // Without this guard, every save on a locked gallery would overwrite
+        // client_id with 0 (because %d casts null to 0), detaching the client.
+        // On INSERT, we write client_id even if absent — it will simply be NULL.
+        if ( isset( $_POST['photoproof_client_id'] ) ) {
+            $row_data['client_id'] = $client_id;
+            $row_format[]          = '%d';
+        } elseif ( ! $existing ) {
+            // First insert: write client_id as NULL even if not submitted, to avoid
+            // a row without any client_id column at all.
+            $row_data['client_id'] = null;
+            $row_format[]          = '%d';
+        }
 
         if ( $existing ) {
             $wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
