@@ -23,6 +23,33 @@ class PhotoProof_Plugin {
 
         // Détection de changement de version pour flush auto des rewrite rules
         add_action( 'init', array( $this, 'maybe_flush_on_version_change' ), 99 );
+        
+        // PUT ME IN FUNCTIONS.PHP!
+        add_filter( 'big_image_size_threshold', '__return_false' );
+        
+        // This will suppress empty email errors when submitting the user form
+        add_action('user_profile_update_errors', 'my_user_profile_update_errors', 10, 3 );
+        function my_user_profile_update_errors($errors, $update, $user) {
+            $errors->remove('empty_email');
+        }
+        
+        // This will remove javascript required validation for email input
+        // It will also remove the '(required)' text in the label
+        // Works for new user, user profile and edit user forms
+        add_action('user_new_form', 'my_user_new_form', 10, 1);
+        add_action('show_user_profile', 'my_user_new_form', 10, 1);
+        add_action('edit_user_profile', 'my_user_new_form', 10, 1);
+        function my_user_new_form($form_type) {
+            ?>
+            <script type="text/javascript">
+                jQuery('#email').closest('tr').removeClass('form-required').find('.description').remove();
+                // Uncheck send new user email option by default
+                <?php if (isset($form_type) && $form_type === 'add-new-user') : ?>
+                    jQuery('#send_user_notification').removeAttr('checked');
+                <?php endif; ?>
+            </script>
+            <?php
+        }
     }
 
     /**
@@ -40,10 +67,10 @@ class PhotoProof_Plugin {
     }
 
     private function define_constants() {
-        define( 'PHOTOPROOF_VERSION', '1.0.1' );
+        define( 'PHOTOPROOF_VERSION', '1.0.2' );
         define( 'PHOTOPROOF_PATH', plugin_dir_path( __FILE__ ) );
         define( 'PHOTOPROOF_URL', plugin_dir_url( __FILE__ ) );
-        define( 'PHOTOPROOF_GALLERY_SLUG', 'galerie-epreuve' );
+        define( 'PHOTOPROOF_GALLERY_SLUG', 'gallery' );
     }
 
     public function activate() {

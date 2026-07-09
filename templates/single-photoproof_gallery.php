@@ -58,6 +58,9 @@ if ( has_post_thumbnail( $post->ID ) ) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <title><?php the_title(); ?> — <?php echo esc_html( $site_title ); ?></title>
+    
+    <meta property="og:image" content="<?= get_the_post_thumbnail_url( $post->ID, 'large' ) ?>" />
+    
     <?php wp_head(); ?>
 </head>
 <body class="pp-standalone">
@@ -140,6 +143,8 @@ if ( has_post_thumbnail( $post->ID ) ) {
             $img_id      = get_the_ID();
             $is_reco     = get_post_meta( $img_id, '_photoproof_recommended', true );
             $is_selected = in_array( $img_id, $selected_ids, true );
+            
+            $img_atts = wp_get_attachment_image_src($img_id, 'full');
 
             $img_src       = $watermark_active
                 ? PhotoProof_Watermark::get_watermarked_url( $img_id )
@@ -165,10 +170,16 @@ if ( has_post_thumbnail( $post->ID ) ) {
 
                     <!-- ─── RECTO ─── -->
                     <div class="pp-card-front">
-                        <div class="pp-card-img-wrap"
+                        <a class="pp-card-img-wrap"
+                            href="<?php echo esc_url( $img_full ); ?>"
+                            onmouseover="preFetchImage(this)"
+                            data-src="<?php echo esc_url( $img_full ); ?>"
+                            data-pswp-width="<?= $img_atts[1] ?>" 
+                            data-pswp-height="<?= $img_atts[2] ?>" 
                              data-full="<?php echo esc_url( $img_full ); ?>">
                             <img
                                 class="pp-card-img"
+                                
                                 src="<?php echo esc_url( $img_src ); ?>"
                                 <?php if ( $img_srcset ) : ?>
                                 srcset="<?php echo esc_attr( $img_srcset ); ?>"
@@ -179,9 +190,12 @@ if ( has_post_thumbnail( $post->ID ) ) {
                                 decoding="async">
 
                             <?php if ( $reco_enabled && $is_reco ) : ?>
-                                <div class="pp-reco-badge"><?php echo esc_html( $icon ); ?></div>
+                                <div class="pp-reco-badge">
+                                    <?php //echo esc_html( $icon ); ?>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#fdfdfd" viewBox="0 0 256 256"><path d="M229.06,108.79l-48.7,42,14.88,62.79a8.4,8.4,0,0,1-12.52,9.17L128,189.09,73.28,222.74a8.4,8.4,0,0,1-12.52-9.17l14.88-62.79-48.7-42A8.46,8.46,0,0,1,31.73,94L95.64,88.8l24.62-59.6a8.36,8.36,0,0,1,15.48,0l24.62,59.6L224.27,94A8.46,8.46,0,0,1,229.06,108.79Z" opacity="0.2"></path><path d="M239.18,97.26A16.38,16.38,0,0,0,224.92,86l-59-4.76L143.14,26.15a16.36,16.36,0,0,0-30.27,0L90.11,81.23,31.08,86a16.46,16.46,0,0,0-9.37,28.86l45,38.83L53,211.75a16.38,16.38,0,0,0,24.5,17.82L128,198.49l50.53,31.08A16.4,16.4,0,0,0,203,211.75l-13.76-58.07,45-38.83A16.43,16.43,0,0,0,239.18,97.26Zm-15.34,5.47-48.7,42a8,8,0,0,0-2.56,7.91l14.88,62.8a.37.37,0,0,1-.17.48c-.18.14-.23.11-.38,0l-54.72-33.65a8,8,0,0,0-8.38,0L69.09,215.94c-.15.09-.19.12-.38,0a.37.37,0,0,1-.17-.48l14.88-62.8a8,8,0,0,0-2.56-7.91l-48.7-42c-.12-.1-.23-.19-.13-.5s.18-.27.33-.29l63.92-5.16A8,8,0,0,0,103,91.86l24.62-59.61c.08-.17.11-.25.35-.25s.27.08.35.25L153,91.86a8,8,0,0,0,6.75,4.92l63.92,5.16c.15,0,.24,0,.33.29S224,102.63,223.84,102.73Z"></path></svg>
+                                </div>
                             <?php endif; ?>
-                        </div>
+                        </a>
 
                         <div class="pp-card-footer">
                             <span class="pp-card-name"><?php echo esc_html( $filename ); ?></span>
@@ -331,6 +345,184 @@ if ( has_post_thumbnail( $post->ID ) ) {
     </div>
 
 </div><!-- /#pp-page -->
+
+
+<!-- PhotoSwipe -->
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.4/photoswipe.min.css" integrity="sha512-LFWtdAXHQuwUGH9cImO9blA3a3GfQNkpF2uRlhaOpSbDevNyK1rmAjs13mtpjvWyi+flP7zYWboqY+8Mkd42xA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<script type="module">
+import Lightbox from 'https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.4/photoswipe-lightbox.esm.min.js';
+
+const leftArrowSVGString = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="white" viewBox="0 0 256 256"><path d="M220,128a4,4,0,0,1-4,4H49.66l65.17,65.17a4,4,0,0,1-5.66,5.66l-72-72a4,4,0,0,1,0-5.66l72-72a4,4,0,0,1,5.66,5.66L49.66,124H216A4,4,0,0,1,220,128Z"></path></svg>';
+
+const rightArrowSVGString = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="white" viewBox="0 0 256 256"><path d="M218.83,130.83l-72,72a4,4,0,0,1-5.66-5.66L206.34,132H40a4,4,0,0,1,0-8H206.34L141.17,58.83a4,4,0,0,1,5.66-5.66l72,72A4,4,0,0,1,218.83,130.83Z"></path></svg>';
+
+
+const lightbox = new Lightbox({
+  arrowPrevSVG: leftArrowSVGString,
+  arrowNextSVG: rightArrowSVGString,
+  closeSVG: '<svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="white" viewBox="0 0 256 256"><path d="M202.83,197.17a4,4,0,0,1-5.66,5.66L128,133.66,58.83,202.83a4,4,0,0,1-5.66-5.66L122.34,128,53.17,58.83a4,4,0,0,1,5.66-5.66L128,122.34l69.17-69.17a4,4,0,1,1,5.66,5.66L133.66,128Z"></path></svg>',
+  zoomSVG: '<svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="white" viewBox="0 0 256 256"><path d="M148,112a4,4,0,0,1-4,4H116v28a4,4,0,0,1-8,0V116H80a4,4,0,0,1,0-8h28V80a4,4,0,0,1,8,0v28h28A4,4,0,0,1,148,112Zm78.83,114.83a4,4,0,0,1-5.66,0l-52.7-52.7a84.1,84.1,0,1,1,5.66-5.66l52.7,52.7A4,4,0,0,1,226.83,226.83ZM112,188a76,76,0,1,0-76-76A76.08,76.08,0,0,0,112,188Z"></path></svg>',
+  // bgClickAction: 'close',
+  gallery: '.pp-grid',
+  children: '.pp-card-img-wrap',
+  pswpModule: () => import('https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.4/photoswipe.esm.min.js')
+});
+
+
+lightbox.on('uiRegister', function() {
+    lightbox.pswp.ui.registerElement({
+        name: 'test-button',
+        ariaLabel: 'Download',
+        order: 9,
+        isButton: true,
+        html: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" viewBox="0 0 256 256"><path d="M236,136v64a12,12,0,0,1-12,12H32a12,12,0,0,1-12-12V136a12,12,0,0,1,12-12H72a4,4,0,0,1,0,8H32a4,4,0,0,0-4,4v64a4,4,0,0,0,4,4H224a4,4,0,0,0,4-4V136a4,4,0,0,0-4-4H184a4,4,0,0,1,0-8h40A12,12,0,0,1,236,136Zm-110.83-5.17a4,4,0,0,0,5.66,0l48-48a4,4,0,1,0-5.66-5.66L132,118.34V24a4,4,0,0,0-8,0v94.34L82.83,77.17a4,4,0,0,0-5.66,5.66ZM196,168a8,8,0,1,0-8,8A8,8,0,0,0,196,168Z"></path></svg>',
+        onClick: (event, el) => {
+            const src = lightbox.pswp.currSlide.data.src
+            const filename = src.split('/').pop()
+            // console.log(event, el)
+            // console.log(src)
+            // location.assign()
+            // window.open(src);
+            const link = document.createElement('a');
+            //link to the uploaded image
+            //  in your local storage
+            link.href = src;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            // if ( confirm('Do you want to toggle zoom?') ) {
+                // lightbox.pswp.toggleZoom();
+            // }
+        }
+    });
+});
+
+
+lightbox.init();
+
+console.log(Lightbox)
+</script>
+
+
+<script>
+  // window.FPConfig = {
+    // delay: 0,
+    // ignoreKeywords: [],
+    // maxRPS: 3,
+    // hoverDelay: 0,
+  // };
+    let preloadedCount = 0
+    let alreadyPreLoadedUrls = []
+    let currentlyPreloading = 0
+    
+    function preFetchImage(t) {
+        const url = t.href
+        
+        if (!alreadyPreLoadedUrls.includes(url) && currentlyPreloading < 3) {
+            console.log('Preloading', url)
+            alreadyPreLoadedUrls.push(url)
+            
+            currentlyPreloading++
+            let img = new Image();
+            img.src = url;
+            img.onload = () => {
+                currentlyPreloading--
+                preloadedCount++
+                console.log(`Loaded ${url}, ${preloadedCount} images preloaded`)
+            }    
+        }
+    }
+  
+</script>
+<!-- <script defer src="https://cdnjs.cloudflare.com/ajax/libs/flying-pages/2.1.2/flying-pages.js" integrity="sha512-YsfXudALTqNufYRI++n3whGZue1s6ABnFoYue/kJz1yFCHdvBdsmES0k+q5pMVFVU0P22mXqrKfKiQSuHV+3+w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
+
+
+<style>
+
+    .pswp {
+        /* --pswp-bg: var(--pp-bg); */
+        --pswp-icon-stroke-width: 1px;
+    }
+    
+    button.pswp__button--test-button {
+      /* background: #136912 !important; */
+      /* font-size: 20px; */
+      /* color: #fff; */
+    }
+    
+    
+    .pp-reco-badge {
+        /* background: transparent; */
+        border-radius: 0;
+        background: var(--pp-bg);
+        /* border-radius: 0; */
+        background: #020202;
+        padding: 6px;
+    }
+    
+    
+    /* Maybe allow selection still? */
+    @media(hover: none) {
+        .pp-grid.pp-layout-masonry .pp-card .pp-card-footer {
+            display: none !important;
+        }    
+    }
+    
+    .pp-content-section {
+        padding-top: 0;
+        
+    }
+    
+    .pp-hero-content {
+        padding-bottom: 24px;
+    }
+    
+    @media (min-width: 768px) {
+        .pp-content-section {
+            /* font-size: 16px; */
+        }
+    }
+    
+    /* .pswp__container {
+        transition: transform var(--pswp-transition-duration) ease;
+    } */
+
+    .pp-select-btn {
+      display: none;
+    }
+    
+    #pp-lb-select {
+        display: none;
+    }
+    
+    :root {
+        --wp--preset--color--base: var(--pp-bg) !important;
+    }
+    
+    .pp-reco-badge {
+        color: white;
+        /* background: transparent; */
+        /* border-radius: 0; */
+    }
+    
+    #pp-lb-img.loading {
+        /* opacity: .5; */
+        animation: pulse .5s infinite alternate linear;
+    }
+    
+    @keyframes pulse {
+        from {
+            opacity: .5;
+        }
+        
+        to {
+            opacity: .7;
+        }
+    }
+</style>
 
 <?php wp_footer(); ?>
 </body>

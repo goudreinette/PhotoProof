@@ -55,6 +55,8 @@
     // ── INTERACTIONS ──────────────────────────────────────────────────
 
     $(document).on('click', '.pp-card-img-wrap', function (e) {
+        return;
+        
         if ($(e.target).closest('.pp-select-btn').length) return;
         var $card = $(this).closest('.pp-card');
         var idx = allItems.indexOf($card[0]);
@@ -103,12 +105,23 @@
         $('#pp-lightbox').fadeOut(180);
         $('body').css({ 'overflow': '', 'padding-right': '' });
     }
+    
+    
+    document.querySelector('#pp-lb-img').addEventListener("load", () => {
+        document.querySelector('#pp-lb-img').classList.remove('loading')
+    });
 
     function updateLightbox() {
         var $card   = $(allItems[lbIndex]);
         var fullSrc = $card.find('.pp-card-img-wrap').data('full') || $card.find('.pp-card-img').attr('src');
         var id      = parseInt($card.data('id'), 10);
         var isSel   = selectedIds.indexOf(id) !== -1;
+        
+        
+        document.querySelector('#pp-lb-img').classList.add('loading')
+        // });
+        
+        
 
         $('#pp-lb-img').attr('src', fullSrc);
         $('#pp-lb-counter').text((lbIndex + 1) + ' / ' + allItems.length);
