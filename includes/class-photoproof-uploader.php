@@ -19,6 +19,7 @@ class PhotoProof_Uploader {
         add_action( 'wp_ajax_photoproof_detach_photo',          array( $this, 'handle_detach_photo' ) );
         add_action( 'wp_ajax_photoproof_toggle_recommendation', array( $this, 'handle_toggle_recommendation' ) );
         add_action( 'wp_ajax_photoproof_get_gallery_photos',    array( $this, 'handle_get_gallery_photos' ) );
+        add_action( 'wp_ajax_photoproof_update_sort',    array( $this, 'handle_update_sort' ) );
     }
 
     /**
@@ -209,6 +210,41 @@ class PhotoProof_Uploader {
             'recommended'   => $recommended,
         ) );
     }
+    
+    /**
+     * AJAX : Update sort
+     */
+    public function handle_update_sort() {
+        check_ajax_referer( 'photoproof_upload_nonce', 'nonce' );
+    
+        if ( ! current_user_can( 'edit_posts' ) ) {
+            wp_send_json_error( array( 'message' => 'Droits insuffisants.' ) );
+        }
+    
+        $post_id       = isset( $_POST['post_id'] )       ? intval( $_POST['post_id'] )       : 0;
+        $attachment_ids = $_POST['attachment_ids'];
+    
+        if ( ! $post_id || ! $attachment_ids ) {
+            wp_send_json_error( array( 'message' => 'Paramètres invalides.' ) );
+        }
+    
+        // Vérifier que l'attachement appartient bien à cette galerie
+        // if ( get_post_field( 'post_parent', $attachment_id ) != $post_id ) {
+        //     wp_send_json_error( array( 'message' => 'Cet attachement n\'appartient pas à cette galerie.' ) );
+        // }
+    
+        // if ( $recommended ) {
+        //     update_post_meta( $attachment_id, '_photoproof_recommended', '1' );
+        // } else {
+        //     delete_post_meta( $attachment_id, '_photoproof_recommended' );
+        // }
+        $result = update_post_meta( $post_id, '_photoproof_gallery_photos', $attachment_ids);
+    
+        wp_send_json_success( array(
+            'attachment_ids' =>  $attachment_ids,
+            'result' => $result
+        ) );
+    }
 
     /**
      * AJAX : retourne les photos d'une galerie
@@ -226,15 +262,23 @@ class PhotoProof_Uploader {
             wp_send_json_error( array( 'message' => 'Galerie invalide.' ) );
         }
 
-        $attachments = get_posts( array(
-            'post_type'      => 'attachment',
-            'post_mime_type' => 'image',
-            'post_status'    => 'inherit',
-            'post_parent'    => $post_id,
-            'posts_per_page' => -1,
-            'orderby'        => 'menu_order date',
-            'order'          => 'ASC',
-        ) );
+        $attachment_ids = get_post_meta( $post_id, '_photoproof_gallery_photos', true );
+
+        // $attachments = get_posts( array(
+        //     'post_type'      => 'attachment',
+        //     'post_mime_type' => 'image',
+        //     'post_status'    => 'inherit',
+        //     'post_parent'    => $post_id,
+        //     'posts_per_page' => -1,
+        //     'orderby'        => 'menu_order date',
+        //     'order'          => 'ASC',
+        // ) );
+        
+        $attachments = [];
+        
+        foreach ($attachment_ids as $id) {
+            array_push($attachments, get_post($id));
+        }
 
         $photos = array();
         foreach ( $attachments as $att ) {

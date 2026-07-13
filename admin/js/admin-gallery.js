@@ -42,6 +42,45 @@ jQuery(document).ready(function ($) {
                 $thumb.css('opacity', 1);
                 $grid.append($thumb);
             });
+            
+            
+            
+            var sortable = new Sortable(document.querySelector('#pp-gallery-preview'), {
+                animation: 150,
+                // swapThreshold: 1,
+                draggable: ".pp-thumb",
+                // SortableJS options go here
+                // See: (https://github.com/SortableJS/Sortable#options)
+            
+                // handle: '.handle',
+                // invertSwap: true,
+                // // . . .
+                onSort: function (/**Event*/evt) {
+                    console.log(evt)
+                    const $thumbs = document.querySelectorAll('.pp-thumb')
+                    const ids = []
+                    for (const $thumb of $thumbs) {
+                        ids.push($thumb.dataset.id)
+                    }
+                    
+                    console.log(ids)
+                    
+                    $.post(photoproof_vars.ajax_url, {
+                        action:        'photoproof_update_sort',
+                        post_id:       photoproof_vars.post_id,
+                        attachment_ids: ids,
+                        // recommended:   isReco ? '0' : '1',
+                        nonce:         photoproof_vars.nonce
+                    }).success(function(res) {
+                        console.log(res.data)
+                    }).fail(function () {
+                        // $btn.toggleClass('pp-reco-active'); rollback
+                    });
+                },
+            })
+            // $grid.sortable({
+            //     
+            // })
         }
     });
 
@@ -261,6 +300,9 @@ jQuery(document).ready(function ($) {
         if (typeof anime === 'undefined') return;
         anime({ targets: this, scale: 1, translateY: 0, duration: 250, easing: 'easeInOutQuad' });
     });
+    
+    // Sorting and moving images ----------------------------------------
+    
 
 // ── 12. BRIDGE GUTENBERG ──────────────────────────────────────────
 // On détecte si on est dans l'éditeur de blocs

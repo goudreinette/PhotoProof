@@ -45,6 +45,13 @@ $query_images = new WP_Query( array(
     'order'          => 'ASC',
 ) );
 
+$attachment_ids = get_post_meta($post->ID, '_photoproof_gallery_photos', true );
+$attachments = [];
+
+foreach ($attachment_ids as $id) {
+    array_push($attachments, get_post($id));
+}
+
 // ── 4. HERO — post thumbnail ──────────────────────────────────────────────
 $hero_url = '';
 if ( has_post_thumbnail( $post->ID ) ) {
@@ -139,8 +146,8 @@ if ( has_post_thumbnail( $post->ID ) ) {
             <div class="pp-column-sizer" aria-hidden="true"></div>
             <div class="pp-gutter-sizer" aria-hidden="true"></div>
         <?php endif; ?>
-        <?php while ( $query_images->have_posts() ) : $query_images->the_post();
-            $img_id      = get_the_ID();
+        <?php foreach ($attachments as $attachment):
+            $img_id      = $attachment->ID;
             $is_reco     = get_post_meta( $img_id, '_photoproof_recommended', true );
             $is_selected = in_array( $img_id, $selected_ids, true );
             
@@ -153,7 +160,7 @@ if ( has_post_thumbnail( $post->ID ) ) {
             $img_full      = $watermark_active
                 ? PhotoProof_Watermark::get_watermarked_url( $img_id )
                 : wp_get_attachment_url( $img_id );
-            $img_title     = get_the_title();
+            $img_title     = $attachment->post_title;
             $filename      = get_post_meta( $img_id, '_photoproof_target_filename', true ) ?: basename( get_attached_file( $img_id ) );
             ?>
 
@@ -244,7 +251,7 @@ if ( has_post_thumbnail( $post->ID ) ) {
                 </div><!-- /.pp-card-flipper -->
 
             </div>
-        <?php endwhile; wp_reset_postdata(); ?>
+        <?php endforeach; wp_reset_postdata(); ?>
     </div>
     <?php else : ?>
         <div class="pp-empty"><p><?php esc_html_e( 'No photos in the gallery yet.', 'photoproof' ); ?></p></div>
