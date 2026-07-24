@@ -192,7 +192,7 @@ class PhotoProof_Metaboxes {
         wp_nonce_field( 'photoproof_save_gallery_settings', 'photoproof_gallery_nonce' );
         ?>
         
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.7/Sortable.js" integrity="sha512-OhCHT6FoTB3Y7j9NVfddbRswBTDQM2Nl5zRnE9dUmB7T2V7DXkEnjE+AmRopiVvqLhA8eilrwluO4dC30Q4yZw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.7/Sortable.js"></script>
 
         <div class="pp-meta" id="pp-wrapper">
 
