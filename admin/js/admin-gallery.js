@@ -223,6 +223,8 @@ jQuery(document).ready(function ($) {
 
         var $img  = $('<img>').attr('src', opts.thumb_url || opts.url || '');
         var $info = $('<div>').addClass('pp-thumb-info').text(opts.filename || '');
+      
+	    $info.attr('title', opts.filename)
 
         var $del = $('<button>')
             .attr({ type: 'button', title: 'Retirer de la galerie', 'data-id': id })
