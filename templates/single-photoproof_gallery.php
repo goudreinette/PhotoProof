@@ -529,6 +529,10 @@ console.log(Lightbox)
             opacity: .7;
         }
     }
+
+    .pp-content-section a {
+        color: inherit;
+    }
 </style>
 
 <?php wp_footer(); ?>
