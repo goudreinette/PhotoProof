@@ -193,7 +193,7 @@ if ( has_post_thumbnail( $post->ID ) ) {
                                 sizes="20vw"
                                 <?php endif; ?>
                                 alt="<?php echo esc_attr( $img_title ); ?>"
-                                loading="lazy"
+                                
                                 decoding="async">
 
                             <?php if ( $reco_enabled && $is_reco ) : ?>
