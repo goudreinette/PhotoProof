@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       PhotoProof
  * Description:       Galerie d'épreuve pour photographe avec gestion de watermark et dossiers sécurisés.
- * Version:           1.0.1
+ * Version:           1.0.2
  * Author:            Cédric Stoecklin
  * License:           GPL-2.0-or-later
  * Text Domain:       photoproof
